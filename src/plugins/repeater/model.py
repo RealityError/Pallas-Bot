@@ -28,7 +28,8 @@ except Exception as error:
     print('TTS not available, error:', error)
     TTS_AVAIABLE = False
 
-mongo_client = pymongo.MongoClient('127.0.0.1', 27017, w=0)
+mongo_client = pymongo.MongoClient('127.0.0.1', 27017,
+        unicode_decode_error_handler='ignore')
 
 mongo_db = mongo_client['PallasBot']
 
@@ -169,8 +170,8 @@ class Chat:
                 user_id=data.user_id,
                 # 删除图片子类型字段，同一张图子类型经常不一样，影响判断
                 raw_message=re.sub(
-                    r',subType=\d+\]',
-                    r']',
+                    r"\.image,.+?\]",
+                    ".image]",
                     data.raw_message),
                 plain_text=data.get_plaintext(),
                 time=data.time,
@@ -184,8 +185,8 @@ class Chat:
                 user_id=data.user_id,
                 # 删除图片子类型字段，同一张图子类型经常不一样，影响判断
                 raw_message=re.sub(
-                    r',subType=\d+\]',
-                    r']',
+                    r"\.image,.+?\]",
+                    ".image]",
                     data.raw_message),
                 plain_text=data.get_plaintext(),
                 time=data.time,
@@ -288,7 +289,7 @@ class Chat:
 
         return yield_results(results)
 
-    @staticmethod
+    @ staticmethod
     def speak() -> Optional[Tuple[int, int, List[Message]]]:
         '''
         主动发言，返回当前最希望发言的 bot 账号、群号、发言消息 List，也有可能不发言
@@ -414,7 +415,7 @@ class Chat:
 
         return None
 
-    @staticmethod
+    @ staticmethod
     def ban(group_id: int, bot_id: int, ban_raw_message: str, reason: str) -> bool:
         '''
         禁止以后回复这句话，仅对该群有效果
@@ -483,7 +484,7 @@ class Chat:
 
         return True
 
-    @staticmethod
+    @ staticmethod
     def get_random_message_from_each_group() -> Dict[int, Dict]:
         '''
         获取每个群近期一条随机发言
@@ -527,7 +528,7 @@ class Chat:
         elif cur_time - Chat._late_save_time > Chat.SAVE_TIME_THRESHOLD:
             Chat._sync(cur_time)
 
-    @staticmethod
+    @ staticmethod
     def _sync(cur_time: int = time.time()):
         '''
         持久化
@@ -779,7 +780,7 @@ class Chat:
             return (answer_str.split('，'), answer_keywords)
         return ([answer_str, ], answer_keywords)
 
-    @staticmethod
+    @ staticmethod
     def _text_to_speech(text: str) -> MessageSegment:
         # if plugin_config.enable_voice:
         #     result = tts_client.synthesis(text, options={'per': 111})  # 度小萌
@@ -788,7 +789,7 @@ class Chat:
         bs = text_2_speech(text[:50], 1.0)
         return MessageSegment.record(bs)
 
-    @staticmethod
+    @ staticmethod
     def update_global_blacklist() -> None:
         Chat._select_blacklist()
 
@@ -802,7 +803,7 @@ class Chat:
 
         Chat._blacklist_answer[Chat.BLACKLIST_FLAG] |= global_blacklist
 
-    @staticmethod
+    @ staticmethod
     def _select_blacklist() -> None:
         all_blacklist = blacklist_mongo.find()
 
@@ -814,7 +815,7 @@ class Chat:
                 Chat._blacklist_answer_reserve[group_id] |= set(
                     item['answers_reserve'])
 
-    @staticmethod
+    @ staticmethod
     def _sync_blacklist() -> None:
         Chat._select_blacklist()
 
@@ -837,7 +838,7 @@ class Chat:
                 {'$set': {'answers_reserve': list(answers)}},
                 upsert=True)
 
-    @staticmethod
+    @ staticmethod
     def clearup_context() -> None:
         '''
         清理所有超过 15 天没人说、且没有学会的话
@@ -873,7 +874,7 @@ class Chat:
                 }
             })
 
-    @staticmethod
+    @ staticmethod
     def _find_ban_keywords(context, group_id) -> set:
         '''
         找到在 group_id 群中对应 context 不能回复的关键词
@@ -895,7 +896,7 @@ class Chat:
                         ban_keywords.add(ban_key)
         return ban_keywords
 
-    @staticmethod
+    @ staticmethod
     def sync():
         Chat._sync()
         Chat._sync_blacklist()
